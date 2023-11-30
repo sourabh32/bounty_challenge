@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.11.7/video-js.min.css" rel="stylesheet" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.11.7/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@3.8.0/dist/videojs-contrib-eme.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <title>Test VideJS DRM</title>
+</head>
+<body>
+
+    <div style="margin: 50px auto;">
+        <video id="my-video" class="video-js"></video>
+        <div id="chapter-buttons"></div>
+    </div>
+
+    <script>
+        var player = videojs(
+            'my-video',
+            {
+                controls: true,
+                fluid: true,
+                html5: {
+                    vhs: { 
+                        overrideNative: true 
+                    }
+                }
+            },
+            function() {
+                var player = this;
+                player.eme();
+                player.src({
+                    src: 'https://cdn.bitmovin.com/content/assets/art-of-motion_drm/mpds/11331.mpd',
+                    type: 'application/dash+xml',
+                    keySystems: {
+                        'com.widevine.alpha': 'https://cwip-shaka-proxy.appspot.com/no_auth',                     
+                    }
+                });
+
+                player.ready(function() {
+                    player.tech(true).on('keystatuschange', function(event) {    
+                        console.log("event: ", event);        
+                    });
+
+                    
+                    var chapterButtonsContainer = document.getElementById('chapter-buttons');
+                    var chapters = [
+                        { start: 0, end: 10, label: 'first braekpoint' },
+                        { start: 11, end: 35, label: 'secontd braekpoint' },
+                        { start: 36, end: 50, label: 'third braekpoint' },
+                        { start: 51, end: 60, label: 'fourth braekpoint' },
+                        { start: 61, end: 80, label: 'fifth braekpoint' },
+                        { start: 81 , end: 90, label: 'last breakpont' },
+                      
+                        
+                    ];
+
+                    chapters.forEach(function(chapter) {
+                        var button = document.createElement('button');
+                        button.innerHTML = '<div>' + chapter.start+ '-' + chapter.end +" " + chapter.label + '</div>'
+                        button.classList.add("chapter")
+                        button.addEventListener('click', function() {
+                            player.currentTime(chapter.start);
+                        });
+                        chapterButtonsContainer.appendChild(button);
+                    });
+                });
+            }
+        );
+    </script>
+</body>
+</html>
